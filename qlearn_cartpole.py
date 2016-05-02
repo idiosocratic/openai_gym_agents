@@ -1,4 +1,6 @@
 import gym
+import numpy as np
+
 env = gym.make('CartPole-v0')
 for i_episode in xrange(20):
     observation = env.reset()
@@ -13,7 +15,7 @@ for i_episode in xrange(20):
             break
             
             
-# create transition dictionary
+# create transition dictionary, model building
 
 trans_dict = {}
 
@@ -50,4 +52,37 @@ if trans_reward_dict[(old_observation, action, observation)] == reward:
 else:
   # re-balance
   
-    
+# implement e-greedy
+if np.random.random() < 0.1:
+  action = env.action_space.sample()
+else:
+  action =     
+  
+# function for returning best action based on q_function
+q_dic = {}
+state1 = "here"
+state2 = "there"
+state3 = "er'where"
+a1 = "act1"
+a2 = "act2"
+q_dic[(state1,a1)] = 17
+q_dic[(state1,a2)] = 1
+q_dic[(state2,a2)] = 13
+q_dic[(state2,a1)] = 14
+q_dic[(state3,a1)] = 3
+q_dic[(state3,a2)] = 33
+
+def maxQ_for_s(state): # will arg-max our action
+  for kee in q_dic:
+    if kee[0] == 'state1':
+      if q_dic[kee] > high_q:
+        high_q = q_dic[kee]
+        print kee[1]
+        print(high_q)
+
+# function for updating Q  
+def update_Q(q_func):
+  
+  
+  
+  
