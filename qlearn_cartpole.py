@@ -72,13 +72,16 @@ q_dic[(state2,a1)] = 14
 q_dic[(state3,a1)] = 3
 q_dic[(state3,a2)] = 33
 
-def maxQ_for_s(state): # will arg-max our action
-  for kee in q_dic:
-    if kee[0] == 'state1':
-      if q_dic[kee] > high_q:
+def maxQ_for_s(q_dict, state): # will arg-max our action
+  high_q = 0
+  high_act = ''
+  for kee in q_dict:
+    if kee[0] == state:
+      if q_dict[kee] > high_q:
         high_q = q_dic[kee]
-        print kee[1]
-        print(high_q)
+        high_act = kee[1]
+  print(high_q)
+  print(high_act)
 
 # function for updating Q  
 def update_Q(q_func):
