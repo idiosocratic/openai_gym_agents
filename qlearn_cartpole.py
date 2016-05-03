@@ -7,8 +7,10 @@ for i_episode in xrange(20):
     for t in xrange(100):
         env.render()
         print observation
-        # need to retain old observation for transition dict
-        action = env.action_space.sample()
+        
+        action = get_action(observation)
+        old_state = observation  # retain old state for updates
+        
         observation, reward, done, info = env.step(action)
         if done:
             print "Episode finished after {} timesteps".format(t+1)
@@ -16,7 +18,11 @@ for i_episode in xrange(20):
             
 # function for getting action    
 def get_action(state):
-  if     
+  if (state_count(state) == 1) or (np.random.random < 0.1): # if this is the first time seeing state, or 1 in 10(e-greedy)
+    action = env.action_space.sample()                      # random action
+  else:
+    action = best_act_for_s(q_val_dict, state)        
+            
             
 # create SAS transition count dictionary
 trans_dict_count = {}
@@ -35,17 +41,22 @@ state_count_dict = {}
 def state_count(state):
   if state not in state_count_dict:
     state_count_dict[state] = 1
+    #q_val_dict[state] = 0 # initialize q-value for state
   else:
     state_count_dict[state] += 1
-  return state_count_dict[state]  
+  return state_count_dict[state]
+    
+
+# dictionary of q-values
+q_val_dict = {}    
+    
   
 for trans in trans_dict[old_state]:
 
   len(trans_dict[old_state])
   adjust = 1/observation_count[old_state]  
   
-  #want to add weight to trans_dict entry of new observation 
-  # & subtract (1/len(entries)) from other entries  
+  
   
 # need transition reward dictionary to keep track of rewards for (s,a,s') tuples
 trans_reward_dict = {}  
@@ -61,24 +72,33 @@ def trans_reward_update(old_state,action,new_state):
   return trans_reward_dict[(old_state, action, new_state)]  
   
 # function for returning best action based on q_function
-def maxQ_for_s(q_dict, state): # will arg-max our action
+def best_act_for_s(state): # will arg-max our action
   high_q = 0
   high_act = ''
-  for kee in q_dict:
+  for kee in q_val_dict:
     if kee[0] == state:
-      if q_dict[kee] > high_q:
-        high_q = q_dic[kee]
+      if q_val_dict[kee] > high_q:
+        high_q = q_val_dict[kee]
         high_act = kee[1]
   return high_act
   #print(high_q)
   #print(high_act)
 
+# max q function, returns highest estimated q for state
+def max_q(state):
+  if state_count(state) == 1:
+    return 0 
+  else:
+    return q_val_dict[(state,best_act_for_s(q_val_dict, state))]
+    
+     
 # function for updating Q  
-def update_Q(old_state, est_q_reward, new_state):
+def update_Q(old_state, action, est_q_reward, new_state):
   
   learning_rate = 0.2
   discount = 0.9
-  q_val_dict[old_state] = q_val_dict[old_state] + learning_rate*(est_q_reward + discount*max_q[new_state] - q_val_dict[old_state]) 
+  q_val_dict[(old_state,action)] = q_val_dict[(old_state,action)] + 
+    learning_rate*(est_q_reward + discount*max_q(new_state) - q_val_dict[old_state]) 
   
   
 
