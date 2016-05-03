@@ -14,9 +14,11 @@ for i_episode in xrange(20):
             print "Episode finished after {} timesteps".format(t+1)
             break
             
+# function for getting action    
+def get_action(state):
+  if     
             
-# create transition dictionary, model building
-
+# create SAS transition count dictionary
 trans_dict_count = {}
 
 def update_sas_trans_count(old_state,action,new_state):
@@ -25,14 +27,17 @@ def update_sas_trans_count(old_state,action,new_state):
   else:  
     trans_dict_count[(old_state,action,new_state)]+=1
 
-# create scaling mechanism to keep track of transition probabilities
-observation_count = {}
 
-if observation not in observation_count:
+# state observation dict
+state_count_dict = {}
 
-  observation_count[observation] = 0
-else:
-  observation_count[observation] += 1
+# state observation counter
+def state_count(state):
+  if state not in state_count_dict:
+    state_count_dict[state] = 1
+  else:
+    state_count_dict[state] += 1
+  return state_count_dict[state]  
   
 for trans in trans_dict[old_state]:
 
