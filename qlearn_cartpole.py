@@ -12,6 +12,17 @@ for i_episode in xrange(20):
         old_state = observation  # retain old state for updates
         
         observation, reward, done, info = env.step(action)
+        
+        new_state = observation
+        update_sas_trans_count(old_state,action,new_state)
+        trans_reward_update(old_state,action,reward,new_state)
+        
+        if (old_state,action) not in q_val_dict:
+          q_val_dict[(old_state,action)] = 0
+        
+        est_q_reward = trans_reward_dict[(old_state, action, new_state)]
+        update_Q(old_state, action, est_q_reward, new_state)  
+        
         if done:
             print "Episode finished after {} timesteps".format(t+1)
             break
@@ -49,12 +60,6 @@ def state_count(state):
 
 # dictionary of q-values
 q_val_dict = {}    
-    
-  
-for trans in trans_dict[old_state]:
-
-  len(trans_dict[old_state])
-  adjust = 1/observation_count[old_state]  
   
   
   
@@ -62,14 +67,14 @@ for trans in trans_dict[old_state]:
 trans_reward_dict = {}  
 
 # transition function for rewards, code for keeping track of stochastic rewards
-def trans_reward_update(old_state,action,new_state):
+def trans_reward_update(old_state,action,reward,new_state):
   tdc = trans_dict_count[(old_state, action, new_state)]
   trd = trans_reward_dict[(old_state, action, new_state)]
-  if tdc == 0:
+  if tdc == 1:
     trans_reward_dict[(old_state, action, new_state)] == reward
   else:
     trans_reward_dict[(old_state, action, new_state)] == ((tdc-1)*trd + reward)/tdc 
-  return trans_reward_dict[(old_state, action, new_state)]  
+  #return trans_reward_dict[(old_state, action, new_state)]  
   
 # function for returning best action based on q_function
 def best_act_for_s(state): # will arg-max our action
