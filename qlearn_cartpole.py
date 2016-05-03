@@ -17,13 +17,13 @@ for i_episode in xrange(20):
             
 # create transition dictionary, model building
 
-trans_dict = {}
+trans_dict_count = {}
 
-if observation not in trans_dict:
-
-  trans_dict.append(observation:{})              
-  
-trans_dict[old_state][observation]+=1
+def update_sas_trans_count(old_state,action,new_state):
+  if (old_state,action,new_state) not in trans_dict_count:
+    trans_dict_count.append((old_state,action,new_state):1)              
+  else:  
+    trans_dict_count[(old_state,action,new_state)]+=1
 
 # create scaling mechanism to keep track of transition probabilities
 observation_count = {}
@@ -45,8 +45,7 @@ for trans in trans_dict[old_state]:
 # need transition reward dictionary to keep track of rewards for (s,a,s') tuples
 trans_reward_dict = {}  
 
-# need code for keeping track of stochastic rewards
-
+# transition function for rewards, code for keeping track of stochastic rewards
 def trans_reward_update(old_state,action,new_state):
   tdc = trans_dict_count[(old_state, action, new_state)]
   trd = trans_reward_dict[(old_state, action, new_state)]
@@ -54,28 +53,8 @@ def trans_reward_update(old_state,action,new_state):
     trans_reward_dict[(old_state, action, new_state)] == reward
   else:
     trans_reward_dict[(old_state, action, new_state)] == ((tdc-1)*trd + reward)/tdc 
-  return trans_reward_dict[(old_state, action, new_state)] 
+  return trans_reward_dict[(old_state, action, new_state)]  
   
-# implement e-greedy
-if np.random.random() < 0.1:
-  action = env.action_space.sample()
-else:
-  action =     
-  
-  
-# q_dic = {}
-# state1 = "here"
-# state2 = "there"
-# state3 = "er'where"
-# a1 = "act1"
-# a2 = "act2"
-# q_dic[(state1,a1)] = 17
-# q_dic[(state1,a2)] = 1
-# q_dic[(state2,a2)] = 13
-# q_dic[(state2,a1)] = 14
-# q_dic[(state3,a1)] = 3
-# q_dic[(state3,a2)] = 33
-
 # function for returning best action based on q_function
 def maxQ_for_s(q_dict, state): # will arg-max our action
   high_q = 0
@@ -85,8 +64,9 @@ def maxQ_for_s(q_dict, state): # will arg-max our action
       if q_dict[kee] > high_q:
         high_q = q_dic[kee]
         high_act = kee[1]
-  print(high_q)
-  print(high_act)
+  return high_act
+  #print(high_q)
+  #print(high_act)
 
 # function for updating Q  
 def update_Q(old_state, est_q_reward, new_state):
