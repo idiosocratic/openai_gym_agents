@@ -23,7 +23,7 @@ if observation not in trans_dict:
 
   trans_dict.append(observation:{})              
   
-trans_dict[old_observation][observation]+=1
+trans_dict[old_state][observation]+=1
 
 # create scaling mechanism to keep track of transition probabilities
 observation_count = {}
@@ -34,10 +34,10 @@ if observation not in observation_count:
 else:
   observation_count[observation] += 1
   
-for trans in trans_dict[old_observation]:
+for trans in trans_dict[old_state]:
 
-  len(trans_dict[old_observation])
-  adjust = 1/observation_count[old_observation]  
+  len(trans_dict[old_state])
+  adjust = 1/observation_count[old_state]  
   
   #want to add weight to trans_dict entry of new observation 
   # & subtract (1/len(entries)) from other entries  
@@ -47,13 +47,14 @@ trans_reward_dict = {}
 
 # need code for keeping track of stochastic rewards
 
-def trans_reward_update(old_observation,action,observation):
-  tdc = trans_dict_count[(old_observation, action, observation)]
-  trd = trans_reward_dict[(old_observation, action, observation)]
+def trans_reward_update(old_state,action,new_state):
+  tdc = trans_dict_count[(old_state, action, new_state)]
+  trd = trans_reward_dict[(old_state, action, new_state)]
   if tdc == 0:
-    trans_reward_dict[(old_observation, action, observation)] == reward
+    trans_reward_dict[(old_state, action, new_state)] == reward
   else:
-    trans_reward_dict[(old_observation, action, observation)] == ((tdc-1)*trd + reward)/tdc 
+    trans_reward_dict[(old_state, action, new_state)] == ((tdc-1)*trd + reward)/tdc 
+  return trans_reward_dict[(old_state, action, new_state)] 
   
 # implement e-greedy
 if np.random.random() < 0.1:
@@ -88,11 +89,11 @@ def maxQ_for_s(q_dict, state): # will arg-max our action
   print(high_act)
 
 # function for updating Q  
-def update_Q(old_state, reward, new_state):
+def update_Q(old_state, est_q_reward, new_state):
   
-  learning_rate = 0.1
+  learning_rate = 0.2
   discount = 0.9
-  q_val_dict[old_state] = q_val_dict[old_state] + learning_rate*(reward + discount*max_q[new_state] - q_val_dict[old_state]) 
+  q_val_dict[old_state] = q_val_dict[old_state] + learning_rate*(est_q_reward + discount*max_q[new_state] - q_val_dict[old_state]) 
   
   
 
