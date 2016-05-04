@@ -123,7 +123,7 @@ def max_q(state):
   if state_count(state) == 1:
     return 0 
   else:
-    return q_val_dict[(state,best_act_for_s(q_val_dict, state))]
+    return q_val_dict[(state,best_act_for_s(state))]
     
  
 # dictionary of q-values
