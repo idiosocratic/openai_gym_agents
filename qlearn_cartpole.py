@@ -71,6 +71,16 @@ def sas_count_update(old_state, action, new_state):
   else:
     sas_count_dict[(old_state, action, new_state)] += 1
   
+  
+# for iterating s'  
+s_a_to_s_dict = {}
+
+def add_s_to_sas(old_state,action,new_state):
+  if (old_state,action) not in s_a_to_s_dict:
+    s_a_to_s_dict[(old_state,action)] = (new_state,)
+  if new_state not in s_a_to_s_dict[(old_state,action)]:
+    s_a_to_s_dict[(old_state,action)].append(new_state)
+      
 
 # create SAS transition count dictionary
 trans_dict_count = {}
