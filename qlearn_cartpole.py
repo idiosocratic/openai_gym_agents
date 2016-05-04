@@ -21,6 +21,7 @@ for i_episode in xrange(20):
           q_val_dict[(old_state,action)] = 0
         
         est_q_reward = trans_reward_dict[(old_state, action, new_state)]
+        # not accounting for state non-determinism
         update_Q(old_state, action, est_q_reward, new_state)  
         
         if done:
@@ -61,6 +62,15 @@ def state_count(state):
 # dictionary of q-values
 q_val_dict = {}    
   
+
+# dictionary for S'A'S counts, needed to track non-determinism
+sas_count_dict = {}
+
+def sas_count_update(old_state, action, new_state):
+  if (old_state, action, new_state) not in sas_count_dict:
+    sas_count_dict[(old_state, action, new_state)] = 1
+  else:
+    sas_count_dict[(old_state, action, new_state)] += 1
   
   
 # need transition reward dictionary to keep track of rewards for (s,a,s') tuples
