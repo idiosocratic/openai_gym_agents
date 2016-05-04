@@ -32,7 +32,7 @@ def get_action(state):
   if (state_count(state) == 1) or (np.random.random < 0.1): # if this is the first time seeing state, or 1 in 10(e-greedy)
     action = env.action_space.sample()                      # random action
   else:
-    action = best_act_for_s(q_val_dict, state)        
+    action = best_act_for_s(state)        
             
             
 # create SAS transition count dictionary
@@ -69,10 +69,10 @@ trans_reward_dict = {}
 # transition function for rewards, code for keeping track of stochastic rewards
 def trans_reward_update(old_state,action,reward,new_state):
   tdc = trans_dict_count[(old_state, action, new_state)]
-  trd = trans_reward_dict[(old_state, action, new_state)]
   if tdc == 1:
     trans_reward_dict[(old_state, action, new_state)] == reward
   else:
+    trd = trans_reward_dict[(old_state, action, new_state)]
     trans_reward_dict[(old_state, action, new_state)] == ((tdc-1)*trd + reward)/tdc 
   #return trans_reward_dict[(old_state, action, new_state)]  
   
