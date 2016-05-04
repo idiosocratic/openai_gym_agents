@@ -139,8 +139,20 @@ def update_Q(old_state, action, est_q_reward, new_state):
     learning_rate*(est_q_reward + discount*max_q(new_state) - q_val_dict[old_state]) 
   
   
+# new function for updating Q(s,a) while accounting for non-determinism in sas transition
 
+def update_Q_sa(old_state, action):
+
+  learning_rate = 0.2
+  discount = 0.9
+  sas_weighting = {}
+  for n_state in s_a_to_s_dict[(old_state,action)]:
+    weight = sas_count_dict[(old_state,action,n_state)] / s_a_count_dict[(old_state,action)]
+    sas_weighting[(old_state,action,n_state)] = weight 
   
-  
+  q_val_dict[(old_state,action)] = 0  #clear old value
+  for each_sas_tup in sas_weighting:
+    q_val_dict[(old_state,action)] += sas_weighting[each_sas_tup]*(q_val_dict[(old_state,action)] + 
+      learning_rate*(trans_reward_dict[each_sas_tup] + discount*max_q(each_sas_tup[2]) - q_val_dict[(old_state,action)])) 
   
   
