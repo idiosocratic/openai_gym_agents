@@ -9,6 +9,7 @@ for i_episode in xrange(20):
         print observation
         
         action = get_action(observation)
+        s_a_count_update(observation,action)
         old_state = observation  # retain old state for updates
         
         observation, reward, done, info = env.step(action)
@@ -27,6 +28,7 @@ for i_episode in xrange(20):
         if done:
             print "Episode finished after {} timesteps".format(t+1)
             break
+   
             
 # function for getting action    
 def get_action(state):
@@ -35,15 +37,6 @@ def get_action(state):
   else:
     action = best_act_for_s(state)        
             
-            
-# create SAS transition count dictionary
-trans_dict_count = {}
-
-def update_sas_trans_count(old_state,action,new_state):
-  if (old_state,action,new_state) not in trans_dict_count:
-    trans_dict_count.append((old_state,action,new_state):1)              
-  else:  
-    trans_dict_count[(old_state,action,new_state)]+=1
 
 
 # state observation dict
@@ -59,8 +52,14 @@ def state_count(state):
   return state_count_dict[state]
     
 
-# dictionary of q-values
-q_val_dict = {}    
+# state-action pair count dictionary
+s_a_count_dict = {}
+
+def s_a_count_update(state,action):
+  if (state,action) not in s_a_count_dict:
+    s_a_count_dict[(state,action)] = 1
+  else:
+    s_a_count_dict[(state,action)] += 1  
   
 
 # dictionary for S'A'S counts, needed to track non-determinism
@@ -71,6 +70,16 @@ def sas_count_update(old_state, action, new_state):
     sas_count_dict[(old_state, action, new_state)] = 1
   else:
     sas_count_dict[(old_state, action, new_state)] += 1
+  
+
+# create SAS transition count dictionary
+trans_dict_count = {}
+
+def update_sas_trans_count(old_state,action,new_state):
+  if (old_state,action,new_state) not in trans_dict_count:
+    trans_dict_count.append((old_state,action,new_state):1)              
+  else:  
+    trans_dict_count[(old_state,action,new_state)]+=1
   
   
 # need transition reward dictionary to keep track of rewards for (s,a,s') tuples
@@ -106,6 +115,10 @@ def max_q(state):
   else:
     return q_val_dict[(state,best_act_for_s(q_val_dict, state))]
     
+ 
+# dictionary of q-values
+q_val_dict = {}     
+     
      
 # function for updating Q  
 def update_Q(old_state, action, est_q_reward, new_state):
