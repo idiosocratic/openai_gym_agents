@@ -1,34 +1,7 @@
 import gym
 import numpy as np
 
-env = gym.make('CartPole-v0')
-for i_episode in xrange(20):
-    observation = env.reset()
-    for t in xrange(100):
-        env.render()
-        print observation
-        
-        action = get_action(observation)
-        s_a_count_update(observation,action)
-        old_state = observation  # retain old state for updates
-        
-        observation, reward, done, info = env.step(action)
-        
-        new_state = observation
-        update_sas_trans_count(old_state,action,new_state)
-        trans_reward_update(old_state,action,reward,new_state)
-        
-        if (old_state,action) not in q_val_dict:
-          q_val_dict[(old_state,action)] = 0
-        
-        est_q_reward = trans_reward_dict[(old_state, action, new_state)]
-        # not accounting for state non-determinism
-        update_Q(old_state, action, est_q_reward, new_state)  
-        
-        if done:
-            print "Episode finished after {} timesteps".format(t+1)
-            break
-   
+
             
 # function for getting action    
 def get_action(state):
@@ -61,16 +34,6 @@ def s_a_count_update(state,action):
   else:
     s_a_count_dict[(state,action)] += 1  
   
-
-# dictionary for S'A'S counts, needed to track non-determinism
-sas_count_dict = {}
-
-def sas_count_update(old_state, action, new_state):
-  if (old_state, action, new_state) not in sas_count_dict:
-    sas_count_dict[(old_state, action, new_state)] = 1
-  else:
-    sas_count_dict[(old_state, action, new_state)] += 1
-  
   
 # for iterating s'  
 s_a_to_s_dict = {}
@@ -87,7 +50,7 @@ trans_dict_count = {}
 
 def update_sas_trans_count(old_state,action,new_state):
   if (old_state,action,new_state) not in trans_dict_count:
-    trans_dict_count.append((old_state,action,new_state):1)              
+    trans_dict_count[(old_state,action,new_state)] = 1              
   else:  
     trans_dict_count[(old_state,action,new_state)]+=1
   
@@ -131,12 +94,12 @@ q_val_dict = {}
      
      
 # function for updating Q  
-def update_Q(old_state, action, est_q_reward, new_state):
-  
-  learning_rate = 0.2
-  discount = 0.9
-  q_val_dict[(old_state,action)] = q_val_dict[(old_state,action)] + 
-    learning_rate*(est_q_reward + discount*max_q(new_state) - q_val_dict[old_state]) 
+# def update_Q(old_state, action, est_q_reward, new_state):
+#   
+#   learning_rate = 0.2
+#   discount = 0.9
+#   q_val_dict[(old_state,action)] = q_val_dict[(old_state,action)] + 
+#     learning_rate*(est_q_reward + discount*max_q(new_state) - q_val_dict[old_state]) 
   
   
 # new function for updating Q(s,a) while accounting for non-determinism in sas transition
@@ -147,7 +110,7 @@ def update_Q_sa(old_state, action):
   discount = 0.9
   sas_weighting = {}
   for n_state in s_a_to_s_dict[(old_state,action)]:
-    weight = sas_count_dict[(old_state,action,n_state)] / s_a_count_dict[(old_state,action)]
+    weight = trans_dict_count[(old_state,action,n_state)] / s_a_count_dict[(old_state,action)]
     sas_weighting[(old_state,action,n_state)] = weight 
   
   q_val_dict[(old_state,action)] = 0  #clear old value
@@ -155,4 +118,45 @@ def update_Q_sa(old_state, action):
     q_val_dict[(old_state,action)] += sas_weighting[each_sas_tup]*(q_val_dict[(old_state,action)] + 
       learning_rate*(trans_reward_dict[each_sas_tup] + discount*max_q(each_sas_tup[2]) - q_val_dict[(old_state,action)])) 
   
-  
+
+# need to create hashable link for dicts
+state_to_int = {}
+
+def state_to_int_func(state):
+  state_in_dict = False
+  state_int = 0
+  for kee in state_to_int:
+    if state_to_int[kee] == state:
+      state_in_dict = True
+      state_int = kee
+  if state_in_dict == False:
+    state_to_int[len(state_to_int)+1] = state  
+
+env = gym.make('CartPole-v0')
+for i_episode in xrange(20):
+    observation = env.reset()
+    for t in xrange(100):
+        env.render()
+        print observation
+        
+        action = get_action(observation)
+        old_state = state_to_int_func(observation)  # retain old state for updates
+        
+        observation, reward, done, info = env.step(action)
+        
+        new_state = state_to_int_func(observation)  
+        
+        s_a_count_update(old_state,action)
+        add_s_to_sas(old_state,action,new_state)
+        update_sas_trans_count(old_state,action,new_state)
+        trans_reward_update(old_state,action,reward,new_state)
+        
+        if (old_state,action) not in q_val_dict:
+          q_val_dict[(old_state,action)] = 0  # initializing
+        
+        update_Q_sa(old_state, action)  
+        
+        if done:
+            print "Episode finished after {} timesteps".format(t+1)
+            break
+     
