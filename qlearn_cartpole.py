@@ -4,12 +4,14 @@ import numpy as np
 
             
 # function for getting action    
-def get_action(state):
+def get_action(state):  
   if (state_count(state) == 1) or (np.random.random < 0.1): # if this is the first time seeing state, or 1 in 10(e-greedy)
     action = env.action_space.sample()                      # random action
   else:
-    action = best_act_for_s(state)        
-            
+    action = best_act_for_s(state)  
+     #if not (action == 0 or action == 1):
+      # action = env.action_space.sample()            
+  return action            
 
 
 # state observation dict
@@ -62,7 +64,7 @@ trans_reward_dict = {}
 def trans_reward_update(old_state,action,reward,new_state):
   tdc = trans_dict_count[(old_state, action, new_state)]
   if tdc == 1:
-    trans_reward_dict[(old_state, action, new_state)] == reward
+    trans_reward_dict[(old_state, action, new_state)] = reward
   else:
     trd = trans_reward_dict[(old_state, action, new_state)]
     trans_reward_dict[(old_state, action, new_state)] == ((tdc-1)*trd + reward)/tdc 
@@ -77,6 +79,11 @@ def best_act_for_s(state): # will arg-max our action
       if q_val_dict[kee] > high_q:
         high_q = q_val_dict[kee]
         high_act = kee[1]
+  if high_act == '':
+    rand_val = np.random.random()
+    if rand_val < 0.5:
+      high_act = 0
+    else: high_act = 1  
   return high_act
   #print(high_q)
   #print(high_act)
@@ -126,12 +133,15 @@ def state_to_int_func(state):
   state_in_dict = False
   state_int = 0
   for kee in state_to_int:
-    if state_to_int[kee] == state:
+    if state_to_int[kee].all() == state.all():
       state_in_dict = True
       state_int = kee
+      return state_int
   if state_in_dict == False:
     state_to_int[len(state_to_int)+1] = state  
-
+    state_int = len(state_to_int)+1
+    return state_int 
+     
 env = gym.make('CartPole-v0')
 for i_episode in xrange(20):
     observation = env.reset()
@@ -139,8 +149,8 @@ for i_episode in xrange(20):
         env.render()
         print observation
         
-        action = get_action(observation)
         old_state = state_to_int_func(observation)  # retain old state for updates
+        action = get_action(old_state)
         
         observation, reward, done, info = env.step(action)
         
