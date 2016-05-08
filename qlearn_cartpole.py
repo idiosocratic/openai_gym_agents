@@ -8,9 +8,9 @@ def get_action(state):
   if (state_count(state) == 1) or (np.random.random < 0.1): # if this is the first time seeing state, or 1 in 10(e-greedy)
     action = env.action_space.sample()                      # random action
   else:
-    action = best_act_for_s(state)  
-     #if not (action == 0 or action == 1):
-      # action = env.action_space.sample()            
+    action = best_act_for_s(state)      
+    if action == 3:
+      action = env.action_space.sample()         
   return action            
 
 
@@ -72,25 +72,30 @@ def trans_reward_update(old_state,action,reward,new_state):
   
 # function for returning best action based on q_function
 def best_act_for_s(state): # will arg-max our action
-  high_q = 0
-  high_act = ''
-  for kee in q_val_dict:
-    if kee[0] == state:
-      if q_val_dict[kee] > high_q:
-        high_q = q_val_dict[kee]
-        high_act = kee[1]
-  if high_act == '':
-    rand_val = np.random.random()
-    if rand_val < 0.5:
-      high_act = 0
-    else: high_act = 1  
-  return high_act
+  high_q = -1
+  high_act = 0 # initialize
+  found_action = False
+  #entry_found = False
+  if not len(q_val_dict) == 0:
+    for kee in q_val_dict: # check q_val dict for our state
+      if kee[0] == state:
+        if q_val_dict[kee] > high_q:
+          high_q = q_val_dict[kee]
+          high_act = kee[1] 
+          found_action = True
+        #entry_found = True  
+  if not (state, high_act) in q_val_dict: # initialize our state in the q_val dict
+    q_val_dict[state,high_act] = 0
+  if found_action:
+    return high_act
+  else:
+    return 3 # lets us know we need to choose randomly
   #print(high_q)
   #print(high_act)
 
 # max q function, returns highest estimated q for state
 def max_q(state):
-  if state_count(state) == 1:
+  if not (state,best_act_for_s(state)) in q_val_dict: #if state_count(state) == 1:
     return 0 
   else:
     return q_val_dict[(state,best_act_for_s(state))]
@@ -120,10 +125,11 @@ def update_Q_sa(old_state, action):
     weight = trans_dict_count[(old_state,action,n_state)] / s_a_count_dict[(old_state,action)]
     sas_weighting[(old_state,action,n_state)] = weight 
   
+  old_q_val = q_val_dict[(old_state,action)]
   q_val_dict[(old_state,action)] = 0  #clear old value
   for each_sas_tup in sas_weighting:
-    q_val_dict[(old_state,action)] += sas_weighting[each_sas_tup]*(q_val_dict[(old_state,action)] + 
-      learning_rate*(trans_reward_dict[each_sas_tup] + discount*max_q(each_sas_tup[2]) - q_val_dict[(old_state,action)])) 
+    q_val_dict[(old_state,action)] += sas_weighting[each_sas_tup]*(old_q_val + 
+      learning_rate*(trans_reward_dict[each_sas_tup] + discount*max_q(each_sas_tup[2]) - old_q_val)) 
   
 
 # need to create hashable link for dicts
@@ -159,11 +165,11 @@ for i_episode in xrange(20):
         s_a_count_update(old_state,action)
         add_s_to_sas(old_state,action,new_state)
         update_sas_trans_count(old_state,action,new_state)
-        trans_reward_update(old_state,action,reward,new_state)
         
         if (old_state,action) not in q_val_dict:
           q_val_dict[(old_state,action)] = 0  # initializing
         
+        trans_reward_update(old_state,action,reward,new_state)
         update_Q_sa(old_state, action)  
         
         if done:
