@@ -21,7 +21,34 @@ class my_rnn(input_size, hidden_size, output_size):
   Why = np.random.randn(output_size, hidden_size)*0.01 # hidden to output
   bh = np.zeros((hidden_size, 1)) # hidden bias
   by = np.zeros((output_size, 1)) # output bias
+  
+  # forward pass
+  def forward_pass(input):
+    xs[t] = np.zeros((vocab_size,1)) # encode in 1-of-k representation
+    xs[t][inputs[t]] = 1
+    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # hidden state
+    ys[t] = np.dot(Why, hs[t]) + by # unnormalized log probabilities for next chars
+    ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t])) # probabilities for next chars
+    loss += -np.log(ps[t][targets[t],0]) # softmax (cross-entropy loss)
 
+  # backward pass: compute gradients going backwards
+  def backward_pass():
+  dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
+  dbh, dby = np.zeros_like(bh), np.zeros_like(by)
+  dhnext = np.zeros_like(hs[0])
+  for t in reversed(range(len(inputs))):
+    dy = np.copy(ps[t])
+    dy[targets[t]] -= 1 # backprop into y
+    dWhy += np.dot(dy, hs[t].T)
+    dby += dy
+    dh = np.dot(Why.T, dy) + dhnext # backprop into h
+    dhraw = (1 - hs[t] * hs[t]) * dh # backprop through tanh nonlinearity
+    dbh += dhraw
+    dWxh += np.dot(dhraw, xs[t].T)
+    dWhh += np.dot(dhraw, hs[t-1].T)
+    dhnext = np.dot(Whh.T, dhraw)
+  for dparam in [dWxh, dWhh, dWhy, dbh, dby]:
+    np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
 
 class my_nn(object):
     """class for classic neural net"""
@@ -33,8 +60,11 @@ class my_nn(object):
         self.last_updated = 0
 
 
+current_state = 
+
 best_q_val_current_state = 0
 best_current_action = random.choice(actions)
+predicted_next_state = 
 
 for action1 in actions:
 
@@ -59,8 +89,39 @@ for action1 in actions:
   
     best_current_action = action1
     
+    predicted_next_state = next_state
     
-new_state, new_reward = agent.act(best_current_action)      
+    
+old_state = current_state    
+current_state, new_reward = agent.act(best_current_action)     
+
+# run rnn loss function using predicted reward/next_state vs actual 
+# backprop rnn
+
+old_state_q_val = predict_q_val(old_state, best_current_action)
+
+# run nn loss function using predicted best_q and received reward
+# backprop nn 
+
+
+
+# Replay Memory (list of SARS' tuples)
+replay_memory = []
+
+# Function for reward clipping
+
+# Function for pruning replay memory
+def prune_memory(replay_memory_list, max_memory):
+  
+  if len(replay_memory_list) > max_memory:
+    num_2_prune = len(replay_memory_list) - max_memory  # number of tuples to prune(pop)
+    
+    for cut in range(num_2_prune):
+      indx = np.random.randint(0, len(replay_memory_list))
+      branch = replay_memory_list.pop(indx)
+    
+    
+ 
     
   
   
