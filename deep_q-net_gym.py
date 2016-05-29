@@ -108,7 +108,36 @@ old_state_q_val = predict_q_val(old_state, best_current_action)
 # Replay Memory (list of SARS' tuples)
 replay_memory = []
 
+# Add to replay
+def add_to_replay(old_state, action, reward, new_state):
+
+  replay_memory.append((old_state, action, reward, new_state))
+
 # Function for reward clipping
+current_max_reward = 0.0
+current_min_reward = 0.0
+
+def scale_reward(unscaled_reward):
+  
+  if unscaled_reward > current_max_reward:
+    current_max_reward = unscaled_reward
+    
+  if unscaled_reward < current_min_reward:
+    current_min_reward = unscaled_reward  
+  
+  if unscaled_reward == current_max_reward:
+    return 0.99
+    
+  if unscaled_reward == current_min_reward:
+    return -0.99   
+    
+    
+  scale = current_max_reward - current_min_reward
+  dif_from_min = unscaled_reward - current_min_reward 
+
+  scaled_reward = ((dif_from_min/scale)*1.98)-0.99
+  if (-1 < scaled_reward < 1):
+    return scaled_reward
 
 # Function for pruning replay memory
 def prune_memory(replay_memory_list, max_memory):
