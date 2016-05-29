@@ -55,8 +55,8 @@ class my_nn(object):
 
 
     def __init__(self, state=None, period=None):
-        self.state = state if state is not None else random.choice(self.valid_states)
-        self.period = period if period is not None else random.choice([3, 4, 5])
+        self.state = state if state is not None else np.random.choice(self.valid_states)
+        self.period = period if period is not None else np.random.choice([3, 4, 5])
         self.last_updated = 0
 
 
@@ -150,9 +150,17 @@ def prune_memory(replay_memory_list, max_memory):
       branch = replay_memory_list.pop(indx)
     
     
- 
-    
-  
+# Function for getting random minibatch
+
+def get_minibatch(replay_mem, batch_size):
+
+  minibatch = []
+  for each in range(batch_size):
+    index = np.random.randint(0,len(replay_mem))
+    rand_sample = replay_mem[index]
+    minibatch.append(sample)
+
+  return minibatch  
   
   
   
