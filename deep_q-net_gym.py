@@ -14,6 +14,35 @@ learning_rate = 1e-1
 
 class gym_env_variables
 
+
+# Layers
+input_size = 0
+layer1_size = 16
+layer2_size = 16
+layer3_size = 16
+output_size = 0
+  
+Wxl1 = np.random.randn(layer1_size, input_size)*0.01 # input to layer1
+Wl1l2 = np.random.randn(layer2_size, layer1_size)*0.01 # layer1 to layer2
+Wl2l3 = np.random.randn(layer3_size, layer2_size)*0.01 # layer2 to layer3
+Wl3y = np.random.randn(output_size, layer3_size)*0.01 # layer3 to output
+bl1 = np.zeros((hidden_size, 1)) # layer1 bias
+bl2 = np.zeros((hidden_size, 1)) # layer2 bias
+bl3 = np.zeros((hidden_size, 1)) # layer3 bias
+by = np.zeros((output_size, 1)) # output bias
+
+
+weights = [Wxl1,Wl1l2,Wl2l3,Wl3y]
+biases = [bl1,bl2,bl3,by]
+
+def forward_pass(_input, _weights, _biases):
+
+  for w, b in zip(_weights, _biases):
+    _input = np.tanh(np.dot(w, _input) + b)
+    
+  return _input  
+    
+    
 class my_rnn(input_size, hidden_size, output_size):
 
   input_size = 0
