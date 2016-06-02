@@ -45,32 +45,38 @@ def forward_pass(_input, _weights, _biases):
 # back-propagation function  
 def backprop(input, target):
 
+  nabla_w = [np.zeros(w.shape) for w in weights] # initialize list of weight updates by layer
+  nabla_b = [np.zeros(b.shape) for b in biases]  # initialize list of bias updates by layer
+  
   activation = input
-  activations = [] # keep list of activations by layer
+  activations = [input] # keep list of activations by layer
       
-  zees = [] # list of z-values by layer -> (np.dot(w, input) + b)
+  zees = [] # list of z-value vectors by layer -> (np.dot(w, input) + b)
   
+  for w, b in zip(weights, biases):
+    zee = np.dot(w, activation) + b
+    activation = np.tanh(zee)
   
-def tanh_prime(zee):  # derivative of tanh
+    zees.append(zee)
+    activations.append(activation)  
+     
+  delta = self.cost_derivative(activations[-1], target) * tanh_prime(zees[-1])
+  
+  nabla_b[-1] = delta
+  nabla_w[-1] = np.dot(delta, activations[-2].transpose()) 
+  
+  for layer in reversed(xrange(2, len(weights)+1)):
+            z = zs[layer]
+            sp = sigmoid_prime(z)
+            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+            nabla_b[-l] = delta
+            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+  return (nabla_b, nabla_w)
+     
+def tanh_prime(zee):  # derivative function for tanh
 
   return 1-(np.tanh(zee)*np.tanh(zee))    
     
-class my_rnn(input_size, hidden_size, output_size):
-
-  input_size = 0
-  layer1_size = 16
-  layer2_size = 16
-  layer3_size = 16
-  output_size = 0
-  
-  Wxl1 = np.random.randn(layer1_size, input_size)*0.01 # input to layer1
-  Wl1l2 = np.random.randn(layer2_size, layer1_size)*0.01 # layer1 to layer2
-  Wl2l3 = np.random.randn(layer3_size, layer2_size)*0.01 # layer2 to layer3
-  Wl3y = np.random.randn(output_size, layer3_size)*0.01 # layer3 to output
-  bl1 = np.zeros((hidden_size, 1)) # layer1 bias
-  bl2 = np.zeros((hidden_size, 1)) # layer2 bias
-  bl3 = np.zeros((hidden_size, 1)) # layer3 bias
-  by = np.zeros((output_size, 1)) # output bias
   
   # forward pass
   def forward_pass(input):
