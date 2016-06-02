@@ -60,7 +60,7 @@ def backprop(input, target):
     zees.append(zee)
     activations.append(activation)  
      
-  delta = self.cost_derivative(activations[-1], target) * tanh_prime(zees[-1])
+  delta = cost_derivative(activations[-1], target) * tanh_prime(zees[-1])
   
   nabla_b[-1] = delta
   nabla_w[-1] = np.dot(delta, activations[-2].transpose()) 
@@ -77,43 +77,8 @@ def tanh_prime(zee):  # derivative function for tanh
 
   return 1-(np.tanh(zee)*np.tanh(zee))    
     
-  
-  # forward pass
-  def forward_pass(input):
-    xs[t] = np.zeros((vocab_size,1)) # encode in 1-of-k representation
-    xs[t][inputs[t]] = 1
-    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # hidden state
-    ys[t] = np.dot(Why, hs[t]) + by # unnormalized log probabilities for next chars
-    ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t])) # probabilities for next chars
-    loss += -np.log(ps[t][targets[t],0]) # softmax (cross-entropy loss)
 
-  # backward pass: compute gradients going backwards
-  def backward_pass():
-  dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
-  dbh, dby = np.zeros_like(bh), np.zeros_like(by)
-  dhnext = np.zeros_like(hs[0])
-  for t in reversed(range(len(inputs))):
-    dy = np.copy(ps[t])
-    dy[targets[t]] -= 1 # backprop into y
-    dWhy += np.dot(dy, hs[t].T)
-    dby += dy
-    dh = np.dot(Why.T, dy) + dhnext # backprop into h
-    dhraw = (1 - hs[t] * hs[t]) * dh # backprop through tanh nonlinearity
-    dbh += dhraw
-    dWxh += np.dot(dhraw, xs[t].T)
-    dWhh += np.dot(dhraw, hs[t-1].T)
-    dhnext = np.dot(Whh.T, dhraw)
-  for dparam in [dWxh, dWhh, dWhy, dbh, dby]:
     np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
-
-class my_nn(object):
-    """class for classic neural net"""
-
-
-    def __init__(self, state=None, period=None):
-        self.state = state if state is not None else np.random.choice(self.valid_states)
-        self.period = period if period is not None else np.random.choice([3, 4, 5])
-        self.last_updated = 0
 
 
 current_state = 
