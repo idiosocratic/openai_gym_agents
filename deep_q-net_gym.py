@@ -66,11 +66,11 @@ def backprop(input, target):
   nabla_w[-1] = np.dot(delta, activations[-2].transpose()) 
   
   for layer in reversed(xrange(2, len(weights)+1)):
-            z = zs[layer]
-            sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
-            nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+    zee = zees[layer]
+    tp = tanh_prime(zee)
+    delta = np.dot(weights[-l+1].transpose(), delta) * tp
+    nabla_b[-l] = delta
+    nabla_w[-l] = np.dot(delta, activations[layer-1].transpose())
   return (nabla_b, nabla_w)
      
 def tanh_prime(zee):  # derivative function for tanh
