@@ -40,8 +40,20 @@ def forward_pass(_input, _weights, _biases):
   for w, b in zip(_weights, _biases):
     _input = np.tanh(np.dot(w, _input) + b)
     
-  return _input  
-    
+  return _input
+  
+# back-propagation function  
+def backprop(input, target):
+
+  activation = input
+  activations = [] # keep list of activations by layer
+      
+  zees = [] # list of z-values by layer -> (np.dot(w, input) + b)
+  
+  
+def tanh_prime(zee):  # derivative of tanh
+
+  return 1-(np.tanh(zee)*np.tanh(zee))    
     
 class my_rnn(input_size, hidden_size, output_size):
 
