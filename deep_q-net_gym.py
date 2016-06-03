@@ -71,7 +71,7 @@ def backprop(input, target):
     delta = np.dot(weights[-layer+1].transpose(), delta) * tp
     nabla_b[-layer] = delta
     nabla_w[-layer] = np.dot(delta, activations[-layer-1].transpose())
-  return (nabla_b, nabla_w)
+  return (nabla_w, nabla_b)
    
    
      
@@ -194,9 +194,30 @@ def get_minibatch(replay_mem, batch_size):
 
   return minibatch  
   
+  #add targets to get_minibatch function
+
+# function for running minibatch
+def run_minibatch(minibatch, learning_rate):
+
+  batch_len = len(minibatch)
+  nabla_w = [np.zeros(w.shape) for w in weights] # initialize list of weight updates by layer
+  nabla_b = [np.zeros(b.shape) for b in biases]  # initialize list of bias updates by layer
+  
+  for input, target in minibatch:
+  
+    delta_n_w, delta_n_b = backprop(input, target)  
+    nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_n_w)]
+    nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_n_b)]
+    
+  #update weights & biases
+  weights = [w-(learning_rate/batch_len)*nw for w, nw in zip(weights, nabla_w)]
+  biases = [b-(learning_rate/batch_len)*nb for b, nb in zip(biases, nabla_b)]
+
   
   
   
+# Create standalone q-network to calculate q-value targets from frozen weights
+# update weights periodically
   
   
   
