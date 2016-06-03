@@ -78,7 +78,16 @@ def tanh_prime(zee):  # derivative function for tanh
   return 1-(np.tanh(zee)*np.tanh(zee))    
     
 
-    np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
+
+
+#np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
+
+
+# function for calculating decaying learning rate
+def get_learning_rate(interation_number):
+ 
+  power = 1 - iteration_number*0.01
+  return np.exp(power) 
 
 
 current_state = 
