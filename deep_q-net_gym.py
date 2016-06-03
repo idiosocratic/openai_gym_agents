@@ -195,6 +195,7 @@ def get_minibatch(replay_mem, batch_size):
   return minibatch  
   
   #add targets to get_minibatch function
+  # currently returning sars' instead of ((state, action), (reward + disco*Q(s',a*)))
 
 # function for running minibatch
 def run_minibatch(minibatch, learning_rate):
