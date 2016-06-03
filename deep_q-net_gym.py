@@ -72,6 +72,8 @@ def backprop(input, target):
     nabla_b[-layer] = delta
     nabla_w[-layer] = np.dot(delta, activations[-layer-1].transpose())
   return (nabla_b, nabla_w)
+   
+   
      
 def tanh_prime(zee):  # derivative function for tanh
 
@@ -188,7 +190,7 @@ def get_minibatch(replay_mem, batch_size):
   for each in range(batch_size):
     index = np.random.randint(0,len(replay_mem))
     rand_sample = replay_mem[index]
-    minibatch.append(sample)
+    minibatch.append(rand_sample)
 
   return minibatch  
   
