@@ -197,6 +197,47 @@ def get_minibatch(replay_mem, batch_size):
   #add targets to get_minibatch function
   # currently returning sars' instead of ((state, action), (reward + disco*Q(s',a*)))
 
+# function for calculating optimal q_value
+def calculate_optimal_q_value(state, _weights, _biases):
+
+ best_q_val = 0
+ actions = [0,1]
+ for action in actions:
+   q_val = calculate_q_value(state, action, _weights, _biases)
+   if q_val > best_q_val:
+     best_q_val = q_val
+   
+  return best_q_val     
+  
+# function for calculating q_value  
+def calculate_q_value(state, action, _weights, _biases):
+
+  input = format_input(state, action)
+  
+  q_val = forward_pass(input, _weights, _biases)
+  
+  return q_val
+
+  
+  
+# function for formatting input from (state, action)
+def format_input(state, action):
+
+  if action == 0:
+    state_list = list(state)
+    state_list.append(0)
+    state_list.append(0)
+    input = np.array(state_list)
+    return input  
+    
+  if action == 1:
+    state_list = list(state)
+    state_list.append(1)
+    state_list.append(1)
+    input = np.array(state_list)
+    return input    
+
+
 # function for running minibatch
 def run_minibatch(minibatch, learning_rate):
 
