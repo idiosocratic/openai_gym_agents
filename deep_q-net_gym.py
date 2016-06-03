@@ -2,18 +2,40 @@
 
 import numpy as np
 
-# hyperparameters
-hidden_size = 50 # size of hidden layer
-seq_length = 15 # number of steps to unroll the RNN for # PLAG
-learning_rate = 1e-1
-
 
 # account for terminal states
-# RNN for predicting next states/reward
-# NN for predicting q-values 
 
 class gym_env_variables
 
+# hyperparameters
+discount = 0.9
+iteration_number = 0
+
+# function for calculating decaying learning rate
+def get_learning_rate(iteration):
+ 
+  power = 1 - iteration_number*0.01
+  return np.exp(power) 
+  
+# function for calculating exploration rate
+def get_exploration_rate(iteration):
+
+  initial_rate = 0.5
+  decay = 0 
+  
+  if iteration > 15:
+    decay = 0.1
+  if iteration > 30:
+    decay = 0.2 
+  if iteration > 50:
+    decay = 0.3 
+  if iteration > 75:
+    decay = 0.4 
+  if iteration > 150:
+    decay = 0.45      
+  current_rate = initial_rate - decay
+  
+  return current_rate   
 
 # Layers
 input_size = 0
@@ -83,13 +105,6 @@ def tanh_prime(zee):  # derivative function for tanh
 
 
 #np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
-
-
-# function for calculating decaying learning rate
-def get_learning_rate(interation_number):
- 
-  power = 1 - iteration_number*0.01
-  return np.exp(power) 
 
 
 current_state = 
@@ -190,7 +205,7 @@ def get_minibatch(replay_mem, batch_size):
   for each in range(batch_size):
     index = np.random.randint(0,len(replay_mem))
     rand_sample = replay_mem[index]
-    target = rand_sample[3] + discount*calculate_optimal_q_value(rand_sample[3])
+    target = rand_sample[3] + discount*(calculate_optimal_q_value(rand_sample[3])[0])
     minibatch.append(((rand_sample[0],rand_sample[1]), target))
 
   return minibatch  
@@ -201,14 +216,19 @@ def get_minibatch(replay_mem, batch_size):
 # function for calculating optimal q_value
 def calculate_optimal_q_value(state):
 
- best_q_val = 0
- actions = [0,1]
- for action in actions:
-   q_val = calculate_q_value(state, action)
-   if q_val > best_q_val:
-     best_q_val = q_val
+  optimal_q_val = 0
+  optimal_action = 0
+  
+  actions = [0,1]
+  for action in actions:
+    q_val = calculate_q_value(state, action)
+    if q_val > optimal_q_val:
+      optimal_q_val = q_val  
+      optimal_action = action
+      
+  best_q_val_tuple = (optimal_q_val, optimal_action)    
    
-  return best_q_val     
+  return best_q_val_tuple     
   
 # function for calculating q_value  
 def calculate_q_value(state, action):
