@@ -190,7 +190,8 @@ def get_minibatch(replay_mem, batch_size):
   for each in range(batch_size):
     index = np.random.randint(0,len(replay_mem))
     rand_sample = replay_mem[index]
-    minibatch.append(rand_sample)
+    target = rand_sample[3] + discount*calculate_optimal_q_value(rand_sample[3])
+    minibatch.append(((rand_sample[0],rand_sample[1]), target))
 
   return minibatch  
   
@@ -198,23 +199,23 @@ def get_minibatch(replay_mem, batch_size):
   # currently returning sars' instead of ((state, action), (reward + disco*Q(s',a*)))
 
 # function for calculating optimal q_value
-def calculate_optimal_q_value(state, _weights, _biases):
+def calculate_optimal_q_value(state):
 
  best_q_val = 0
  actions = [0,1]
  for action in actions:
-   q_val = calculate_q_value(state, action, _weights, _biases)
+   q_val = calculate_q_value(state, action)
    if q_val > best_q_val:
      best_q_val = q_val
    
   return best_q_val     
   
 # function for calculating q_value  
-def calculate_q_value(state, action, _weights, _biases):
+def calculate_q_value(state, action):
 
   input = format_input(state, action)
   
-  q_val = forward_pass(input, _weights, _biases)
+  q_val = forward_pass(input, weights, biases)
   
   return q_val
 
