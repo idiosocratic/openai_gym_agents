@@ -4,9 +4,7 @@ import numpy as np
 
 
 # account for terminal states
-
-class gym_env_variables
-
+     
 # hyperparameters
 discount = 0.9
 iteration_number = 0
@@ -283,7 +281,55 @@ def run_minibatch(minibatch, learning_rate):
 # update weights periodically
   
   
-  
+  # generic script for loading gym environment and running an agent
+import gym
+
+
+env = gym.make('CartPole-v0')
+for i_episode in xrange(20):
+    observation = env.reset()
+    for t in xrange(100):
+        env.render()
+        print observation
+        
+        old_state = observation  # retain old state for updates
+        
+        if iteration_number < 16:
+        
+          #pick random action
+          action = env.action_space.sample()
+        
+        if iteration_number > 15:
+        
+          #pick best action for state
+        
+        
+        observation, reward, done, info = env.step(action)
+        
+        new_state = observation
+        
+        add_to_replay(old_state, action, reward, new_state)
+        
+        print "Old state, action, new state, reward: "
+        print old_state, action, new_state, reward
+        print "Shape: "
+        print observation.shape
+        
+        s_a_count_update(old_state,action)
+        add_s_to_sas(old_state,action,new_state)
+        update_sas_trans_count(old_state,action,new_state)
+        
+        if (old_state,action) not in q_val_dict:
+          q_val_dict[(old_state,action)] = 0  # initializing
+        
+        trans_reward_update(old_state,action,reward,new_state)
+        update_Q_sa(old_state, action)  
+        
+        if done:
+            print "Q-value Dict:"
+            print q_val_dict
+            print "Episode finished after {} timesteps".format(t+1)
+            break
   
   
   
