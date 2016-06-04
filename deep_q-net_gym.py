@@ -36,19 +36,19 @@ def get_exploration_rate(iteration):
   return current_rate   
 
 # Layers
-input_size = 0
+input_size = 4
 layer1_size = 16
 layer2_size = 16
 layer3_size = 16
-output_size = 0
+output_size = 1
   
 Wxl1 = np.random.randn(layer1_size, input_size)*0.01 # input to layer1
 Wl1l2 = np.random.randn(layer2_size, layer1_size)*0.01 # layer1 to layer2
 Wl2l3 = np.random.randn(layer3_size, layer2_size)*0.01 # layer2 to layer3
 Wl3y = np.random.randn(output_size, layer3_size)*0.01 # layer3 to output
-bl1 = np.zeros((hidden_size, 1)) # layer1 bias
-bl2 = np.zeros((hidden_size, 1)) # layer2 bias
-bl3 = np.zeros((hidden_size, 1)) # layer3 bias
+bl1 = np.zeros((layer1_size, 1)) # layer1 bias
+bl2 = np.zeros((layer2_size, 1)) # layer2 bias
+bl3 = np.zeros((layer3_size, 1)) # layer3 bias
 by = np.zeros((output_size, 1)) # output bias
 
 
