@@ -273,7 +273,7 @@ for i_episode in xrange(20):
             #pick best action for state
             optimal_tuple = calculate_optimal_q_value(observation)
             action = optimal_tuple[1]  
-        
+            print optimal_tuple[0]
         
         observation, reward, done, info = env.step(action)
         
@@ -299,8 +299,7 @@ for i_episode in xrange(20):
           prune_memory(replay_memory, max_replay_size)
         
         if done:
-            print "Q-value Dict:"
-            print q_val_dict
+            
             print "Episode finished after {} timesteps".format(t+1)
             break
   
