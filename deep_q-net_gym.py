@@ -164,7 +164,7 @@ def get_minibatch(replay_mem, batch_size):
   for each in range(batch_size):
     index = np.random.randint(0,len(replay_mem))
     rand_sample = replay_mem[index]
-    target = rand_sample[3] + discount*(calculate_optimal_q_value(rand_sample[3])[0])
+    target = rand_sample[2] + discount*(calculate_optimal_q_value(rand_sample[3])[0])
     minibatch.append(((rand_sample[0],rand_sample[1]), target))
 
   return minibatch  
