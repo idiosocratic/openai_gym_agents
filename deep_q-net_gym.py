@@ -94,6 +94,12 @@ def backprop(input, target):
   return (nabla_w, nabla_b)
    
    
+
+def cost_derivative(output_activations, targets):
+        
+  return (output_activations - targets)   
+     
+     
      
 def tanh_prime(zee):  # derivative function for tanh
 
@@ -103,52 +109,7 @@ def tanh_prime(zee):  # derivative function for tanh
 
 
 #np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
-
-
-current_state = 
-
-best_q_val_current_state = 0
-best_current_action = random.choice(actions)
-predicted_next_state = 
-
-for action1 in actions:
-
-  next_state, reward = predict_next_state_reward(state, action1)
-  
-  best_q_ns = 0
-  
-  
-  for action2 in actions:
-  
-    current_q_ns = predict_q_val(next_state, action2)
-    
-    if current_q_ns > best_q_ns:
-    
-      best_q_ns = current_q_ns
-      
-  q_val_current_state = reward + discount*best_q_ns      
-  
-  if q_val_current_state > best_q_val_current_state:
-  
-    best_q_val_current_state = q_val_current_state   
-  
-    best_current_action = action1
-    
-    predicted_next_state = next_state
-    
-    
-old_state = current_state    
-current_state, new_reward = agent.act(best_current_action)     
-
-# run rnn loss function using predicted reward/next_state vs actual 
-# backprop rnn
-
-old_state_q_val = predict_q_val(old_state, best_current_action)
-
-# run nn loss function using predicted best_q and received reward
-# backprop nn 
-
-
+ 
 
 # Replay Memory (list of SARS' tuples)
 replay_memory = []
@@ -302,6 +263,8 @@ for i_episode in xrange(20):
         if iteration_number > 15:
         
           #pick best action for state
+          optimal_tuple = calculate_optimal_q_value(observation)
+          action = optimal_tuple[1]  
         
         
         observation, reward, done, info = env.step(action)
@@ -315,15 +278,15 @@ for i_episode in xrange(20):
         print "Shape: "
         print observation.shape
         
-        s_a_count_update(old_state,action)
-        add_s_to_sas(old_state,action,new_state)
-        update_sas_trans_count(old_state,action,new_state)
+        iteration_number += 1
         
-        if (old_state,action) not in q_val_dict:
-          q_val_dict[(old_state,action)] = 0  # initializing
+        # if iteration_num modulo 11 == 0
+        # run mini-batch
         
-        trans_reward_update(old_state,action,reward,new_state)
-        update_Q_sa(old_state, action)  
+        mini_b = get_minibatch(replay_memory, 10) 
+        eta = get_learning_rate(iteration_number)
+        run_minibatch(mini_b, eta)
+         
         
         if done:
             print "Q-value Dict:"
