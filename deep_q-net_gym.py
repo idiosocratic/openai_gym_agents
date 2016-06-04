@@ -255,16 +255,24 @@ for i_episode in xrange(20):
         
         old_state = observation  # retain old state for updates
         
-        if iteration_number < 16:
+        if iteration_number < 13:
         
-          #pick random action
+          #pick random action on first few, to initialize replay
           action = env.action_space.sample()
         
-        if iteration_number > 15:
-        
-          #pick best action for state
-          optimal_tuple = calculate_optimal_q_value(observation)
-          action = optimal_tuple[1]  
+        if iteration_number > 12:
+          
+          # implement epsilon-greedy
+          random_fate = np.random.random()
+          
+          if random_fate <= get_exploration_rate(iteration_number):
+            #pick random action
+            action = env.action_space.sample()
+          
+          if random_fate > get_exploration_rate(iteration_number):
+            #pick best action for state
+            optimal_tuple = calculate_optimal_q_value(observation)
+            action = optimal_tuple[1]  
         
         
         observation, reward, done, info = env.step(action)
@@ -280,13 +288,15 @@ for i_episode in xrange(20):
         
         iteration_number += 1
         
-        # if iteration_num modulo 11 == 0
-        # run mini-batch
         
-        mini_b = get_minibatch(replay_memory, 10) 
-        eta = get_learning_rate(iteration_number)
-        run_minibatch(mini_b, eta)
+        # run mini-batch
+        if iteration_number % 11 == 0:
+          mini_b = get_minibatch(replay_memory, 10) 
+          eta = get_learning_rate(iteration_number)
+          run_minibatch(mini_b, eta)
          
+          max_replay_size = 50 
+          prune_memory(replay_memory, max_replay_size)
         
         if done:
             print "Q-value Dict:"
