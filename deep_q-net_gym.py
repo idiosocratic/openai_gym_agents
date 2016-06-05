@@ -36,10 +36,10 @@ def get_exploration_rate(iteration):
   return current_rate   
 
 # Layers
-input_size = 4
-layer1_size = 16
-layer2_size = 16
-layer3_size = 16
+input_size = 6
+layer1_size = 10
+layer2_size = 10
+layer3_size = 10
 output_size = 1
   
 Wxl1 = np.random.randn(layer1_size, input_size)*0.01 # input to layer1
@@ -51,10 +51,11 @@ bl2 = np.zeros((layer2_size, 1)) # layer2 bias
 bl3 = np.zeros((layer3_size, 1)) # layer3 bias
 by = np.zeros((output_size, 1)) # output bias
 
-
 weights = [Wxl1,Wl1l2,Wl2l3,Wl3y]
 biases = [bl1,bl2,bl3,by]
 
+input_shape_zeros = np.zeros((6, 1))
+ 
 def forward_pass(_input, _weights, _biases):
 
   for w, b in zip(_weights, _biases):
@@ -207,14 +208,18 @@ def format_input(state, action):
     state_list = list(state)
     state_list.append(0)
     state_list.append(0)
-    input = np.array(state_list)
+    input = input_shape_zeros
+    for i in range(len(state_list)):
+      input[i] = state_list[i]
     return input  
     
   if action == 1:
     state_list = list(state)
     state_list.append(1)
     state_list.append(1)
-    input = np.array(state_list)
+    input = input_shape_zeros
+    for i in range(len(state_list)):
+      input[i] = state_list[i]
     return input    
 
 
