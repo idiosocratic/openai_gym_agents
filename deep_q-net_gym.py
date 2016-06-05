@@ -70,6 +70,9 @@ def backprop(input, target):
   nabla_b = [np.zeros(b.shape) for b in biases]  # initialize list of bias updates by layer
   
   activation = input
+  print "Input: "
+  print input
+  print input.shape
   activations = [input] # keep list of activations by layer
       
   zees = [] # list of z-value vectors by layer -> (np.dot(w, input) + b)
@@ -224,14 +227,15 @@ def format_input(state, action):
 
 
 # function for running minibatch
-def run_minibatch(minibatch, learning_rate):
+def run_minibatch(minibatch, learning_rate, _weights, _biases):
 
   batch_len = len(minibatch)
-  nabla_w = [np.zeros(w.shape) for w in weights] # initialize list of weight updates by layer
-  nabla_b = [np.zeros(b.shape) for b in biases]  # initialize list of bias updates by layer
+  nabla_w = [np.zeros(w.shape) for w in _weights] # initialize list of weight updates by layer
+  nabla_b = [np.zeros(b.shape) for b in _biases]  # initialize list of bias updates by layer
   
-  for input, target in minibatch:
+  for state_action, target in minibatch:
   
+    input = format_input(state_action[0], state_action[1])
     delta_n_w, delta_n_b = backprop(input, target)  
     nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_n_w)]
     nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_n_b)]
@@ -298,7 +302,7 @@ for i_episode in xrange(20):
         if iteration_number % 11 == 0:
           mini_b = get_minibatch(replay_memory, 10) 
           eta = get_learning_rate(iteration_number)
-          run_minibatch(mini_b, eta)
+          run_minibatch(mini_b, eta, weights, biases)
          
           max_replay_size = 50 
           prune_memory(replay_memory, max_replay_size)
