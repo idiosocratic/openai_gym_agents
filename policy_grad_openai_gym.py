@@ -98,45 +98,7 @@ def avg_rewards_per_epi(rwd_list):
 
   return np.average(rwd_list)     
      
-     
-     
-# SARS' Memory (list of SARS' tuples)
-replay_memory = []
 
-# Add to replay
-def add_to_replay(old_state, action, reward, new_state):
-
-  replay_memory.append((old_state, action, reward, new_state))
-
-
-# function for calculating optimal q_value
-def calculate_optimal_q_value(state):
-
-  optimal_q_val = 0
-  optimal_action = 0
-  
-  actions = [0,1]
-  for action in actions:
-    q_val = calculate_q_value(state, action)
-    if q_val > optimal_q_val:
-      optimal_q_val = q_val  
-      optimal_action = action
-      
-  best_q_val_tuple = (optimal_q_val, optimal_action)    
-   
-  return best_q_val_tuple     
-  
-# function for calculating q_value  
-def calculate_q_value(state, action):
-
-  input = format_input(state, action)
-  
-  q_val = forward_pass(input, weights, biases)
-  
-  return q_val
-
-  
-  
 # function for formatting input 
 def format_input(state):
 
@@ -148,31 +110,24 @@ def format_input(state):
 
 
 # function for running minibatch
-def run_minibatch(minibatch, learning_rate, _weights, _biases):
+def run_batch(batch, learning_rate, _weights, _biases):
 
-  batch_len = len(minibatch)
+  batch_len = len(batch)
   nabla_w = [np.zeros(w.shape) for w in _weights] # initialize list of weight updates by layer
   nabla_b = [np.zeros(b.shape) for b in _biases]  # initialize list of bias updates by layer
   
-  for state_action, target in minibatch:
+  for state, target in batch:
   
-    input = format_input(state_action[0], state_action[1])
-    delta_n_w, delta_n_b = backprop(input, target)  
+    delta_n_w, delta_n_b = backprop(state, target)  
     nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_n_w)]
     nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_n_b)]
     
   #update weights & biases
-  weights = [w-(learning_rate/batch_len)*nw for w, nw in zip(_weights, nabla_w)]
-  biases = [b-(learning_rate/batch_len)*nb for b, nb in zip(_biases, nabla_b)]
+  weights = [w-(learning_rate*nw) for w, nw in zip(_weights, nabla_w)]
+  biases = [b-(learning_rate*nb) for b, nb in zip(_biases, nabla_b)]
 
-  
-  
-  
-# Create standalone q-network to calculate q-value targets from frozen weights
-# update weights periodically
-  
-  
-  # generic script for loading gym environment and running an agent
+
+# script for loading gym environment and running agent
 import gym
 
 
@@ -199,15 +154,13 @@ for i_episode in xrange(300):
           # implement epsilon-greedy
           random_fate = np.random.random()
           
-          if random_fate <= get_exploration_rate(iteration_number):
-            #pick random action
-            action = env.action_space.sample()
+          # probability of choosing one
+          prob_for_one = forward_pass(current_state, weights, biases)
+          if random_fate <= prob_for_one:
+            action = 1
           
-          if random_fate > get_exploration_rate(iteration_number):
-            #pick best action for state
-            optimal_tuple = calculate_optimal_q_value(observation)
-            action = optimal_tuple[1]  
-            print optimal_tuple[0]
+          if random_fate > prob_for_one:
+            action = 0
         
         observation, reward, done, info = env.step(action)
         
@@ -242,22 +195,30 @@ for i_episode in xrange(300):
     print "E Rs: "
     print episode_rewards
     
-    if episode_rewards > avg_rewards_per_epi(episode_rewards_list):
+    if iteration_number > 12:
     
-      # everything marked correct
-      episode_state_target_list = episode_state_action_list
-      
-    if episode_rewards <= avg_rewards_per_epi(episode_rewards_list):
+      if episode_rewards > avg_rewards_per_epi(episode_rewards_list):
     
-      # everything marked incorrect
-      corrections = []
-      for entry in episode_state_action_list:
-        if entry[1] == 0:
-          corrections.append((entry[0], 1))
-        if entry[1] == 1:
-          corrections.append((entry[0], 0))    
+        # everything marked correct
+        episode_state_target_list = episode_state_action_list
       
-      episode_state_target_list = corrections  
+        eta = get_learning_rate(iteration_number)
+        run_batch(episode_state_target_list, eta, weights, biases)
+      
+      if episode_rewards <= avg_rewards_per_epi(episode_rewards_list):
+    
+        # everything marked incorrect
+        corrections = []
+        for entry in episode_state_action_list:
+          if entry[1] == 0:
+            corrections.append((entry[0], 1))
+          if entry[1] == 1:
+            corrections.append((entry[0], 0))    
+      
+        episode_state_target_list = corrections  
+      
+        eta = get_learning_rate(iteration_number)
+        run_batch(episode_state_target_list, eta, weights, biases)
   
     episode_rewards_list.append(episode_rewards)
       
