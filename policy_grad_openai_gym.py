@@ -15,53 +15,35 @@ def get_learning_rate(iteration):
   power = 1 - iteration_number*0.01
   return np.exp(power) 
   
-# function for calculating exploration rate
-def get_exploration_rate(iteration):
-
-  initial_rate = 0.5
-  decay = 0 
-  
-  if iteration > 15:
-    decay = 0.1
-  if iteration > 30:
-    decay = 0.2 
-  if iteration > 50:
-    decay = 0.3 
-  if iteration > 75:
-    decay = 0.4 
-  if iteration > 150:
-    decay = 0.45      
-  current_rate = initial_rate - decay
-  
-  return current_rate   
+ 
 
 # Layers
-input_size = 6
+input_size = 4
 layer1_size = 10
 layer2_size = 10
-layer3_size = 10
 output_size = 1
   
 Wxl1 = np.random.randn(layer1_size, input_size)*0.01 # input to layer1
 Wl1l2 = np.random.randn(layer2_size, layer1_size)*0.01 # layer1 to layer2
-Wl2l3 = np.random.randn(layer3_size, layer2_size)*0.01 # layer2 to layer3
-Wl3y = np.random.randn(output_size, layer3_size)*0.01 # layer3 to output
+Wl2y = np.random.randn(output_size, layer2_size)*0.01 # layer2 to output
 bl1 = np.zeros((layer1_size, 1)) # layer1 bias
 bl2 = np.zeros((layer2_size, 1)) # layer2 bias
-bl3 = np.zeros((layer3_size, 1)) # layer3 bias
 by = np.zeros((output_size, 1)) # output bias
 
 weights = [Wxl1,Wl1l2,Wl2l3,Wl3y]
 biases = [bl1,bl2,bl3,by]
 
-input_shape_zeros = np.zeros((6, 1))
+input_shape_zeros = np.zeros((4, 1))
  
 def forward_pass(_input, _weights, _biases):
 
   for w, b in zip(_weights, _biases):
-    _input = np.tanh(np.dot(w, _input) + b)
+    _input = sigmoid(np.dot(w, _input) + b)
     
   return _input
+  
+def sigmoid(x): 
+  return 1.0 / (1.0 + np.exp(-x))  
   
 # back-propagation function  
 def backprop(input, target):
