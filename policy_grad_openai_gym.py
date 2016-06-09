@@ -91,7 +91,7 @@ def cost_derivative(output_activations, targets):
      
 
 # keep list of episode rewards
-episode_rewards = []
+episode_rewards_list = []
      
 # calculate average from a list     
 def avg_rewards_per_epi(rwd_list):
@@ -137,26 +137,14 @@ def calculate_q_value(state, action):
 
   
   
-# function for formatting input from (state, action)
-def format_input(state, action):
+# function for formatting input 
+def format_input(state):
 
-  if action == 0:
-    state_list = list(state)
-    state_list.append(0)
-    state_list.append(0)
-    input = input_shape_zeros
-    for i in range(len(state_list)):
-      input[i] = state_list[i]
-    return input  
-    
-  if action == 1:
-    state_list = list(state)
-    state_list.append(1)
-    state_list.append(1)
-    input = input_shape_zeros
-    for i in range(len(state_list)):
-      input[i] = state_list[i]
-    return input    
+  state_list = list(state)
+  input = input_shape_zeros
+  for i in range(len(state_list)):
+    input[i] = state_list[i]
+  return input   
 
 
 # function for running minibatch
@@ -189,15 +177,18 @@ import gym
 
 
 env = gym.make('CartPole-v0')
-for i_episode in xrange(10):
+for i_episode in xrange(300):
     observation = env.reset()
     episode_rewards = 0
-    for t in xrange(100):
+    episode_state_action_list = []
+    episode_state_target_list = []
+    for t in xrange(20):
         env.render()
         print observation
         
-        old_state = observation  # retain old state for updates
+        current_state = format_input(observation)  
         
+        # pick action
         if iteration_number < 13:
         
           #pick random action on first few, to initialize replay
@@ -220,7 +211,7 @@ for i_episode in xrange(10):
         
         observation, reward, done, info = env.step(action)
         
-        new_state = observation
+        episode_state_action_list.append((current_state, action))
         
         episode_rewards += reward
         
@@ -250,8 +241,26 @@ for i_episode in xrange(10):
             break
     print "E Rs: "
     print episode_rewards
+    
+    if episode_rewards > avg_rewards_per_epi(episode_rewards_list):
+    
+      # everything marked correct
+      episode_state_target_list = episode_state_action_list
+      
+    if episode_rewards <= avg_rewards_per_epi(episode_rewards_list):
+    
+      # everything marked incorrect
+      corrections = []
+      for entry in episode_state_action_list:
+        if entry[1] == 0:
+          corrections.append((entry[0], 1))
+        if entry[1] == 1:
+          corrections.append((entry[0], 0))    
+      
+      episode_state_target_list = corrections  
   
-  
+    episode_rewards_list.append(episode_rewards)
+      
   
   
   
