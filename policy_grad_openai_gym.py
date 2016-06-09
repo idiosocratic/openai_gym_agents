@@ -42,8 +42,13 @@ def forward_pass(_input, _weights, _biases):
     
   return _input
   
+# sigmoid function
 def sigmoid(x): 
   return 1.0 / (1.0 + np.exp(-x))  
+  
+# derivative of sigmoid function
+def sigmoid_prime(x):
+    return sigmoid(x)*(1-sigmoid(x))  
   
 # back-propagation function  
 def backprop(input, target):
