@@ -66,43 +66,41 @@ def backprop(input, target):
   
   for w, b in zip(weights, biases):
     zee = np.dot(w, activation) + b
-    activation = np.tanh(zee)
+    activation = sigmoid(zee)
   
     zees.append(zee)
     activations.append(activation)  
      
-  delta = cost_derivative(activations[-1], target) * tanh_prime(zees[-1])
+  delta = cost_derivative(activations[-1], target) * sigmoid_prime(zees[-1])
   
   nabla_b[-1] = delta
   nabla_w[-1] = np.dot(delta, activations[-2].transpose()) 
   
   for layer in xrange(2, len(weights)+1):
     zee = zees[-layer]
-    tp = tanh_prime(zee)
-    delta = np.dot(weights[-layer+1].transpose(), delta) * tp
+    sp = sigmoid_prime(zee)
+    delta = np.dot(weights[-layer+1].transpose(), delta) * sp
     nabla_b[-layer] = delta
     nabla_w[-layer] = np.dot(delta, activations[-layer-1].transpose())
   return (nabla_w, nabla_b)
    
    
-
 def cost_derivative(output_activations, targets):
         
   return (output_activations - targets)   
      
+
+# keep list of episode rewards
+episode_rewards = []
+     
+# calculate average from a list     
+def avg_rewards_per_epi(rwd_list):
+
+  return np.average(rwd_list)     
      
      
-def tanh_prime(zee):  # derivative function for tanh
-
-  return 1-(np.tanh(zee)*np.tanh(zee))    
-    
-
-
-
-#np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
- 
-
-# Replay Memory (list of SARS' tuples)
+     
+# SARS' Memory (list of SARS' tuples)
 replay_memory = []
 
 # Add to replay
@@ -110,58 +108,6 @@ def add_to_replay(old_state, action, reward, new_state):
 
   replay_memory.append((old_state, action, reward, new_state))
 
-# Function for reward clipping
-current_max_reward = 0.0
-current_min_reward = 0.0
-
-def scale_reward(unscaled_reward):
-  
-  if unscaled_reward > current_max_reward:
-    current_max_reward = unscaled_reward
-    
-  if unscaled_reward < current_min_reward:
-    current_min_reward = unscaled_reward  
-  
-  if unscaled_reward == current_max_reward:
-    return 0.99
-    
-  if unscaled_reward == current_min_reward:
-    return -0.99   
-    
-    
-  scale = current_max_reward - current_min_reward
-  dif_from_min = unscaled_reward - current_min_reward 
-
-  scaled_reward = ((dif_from_min/scale)*1.98)-0.99
-  if (-1 < scaled_reward < 1):
-    return scaled_reward
-
-# Function for pruning replay memory
-def prune_memory(replay_memory_list, max_memory):
-  
-  if len(replay_memory_list) > max_memory:
-    num_2_prune = len(replay_memory_list) - max_memory  # number of tuples to prune(pop)
-    
-    for cut in range(num_2_prune):
-      indx = np.random.randint(0, len(replay_memory_list))
-      branch = replay_memory_list.pop(indx)
-    
-    
-# Function for getting random minibatch
-
-def get_minibatch(replay_mem, batch_size):
-
-  minibatch = []
-  for each in range(batch_size):
-    index = np.random.randint(0,len(replay_mem))
-    rand_sample = replay_mem[index]
-    target = rand_sample[2] + discount*(calculate_optimal_q_value(rand_sample[3])[0])
-    minibatch.append(((rand_sample[0],rand_sample[1]), target))
-
-  return minibatch  
-  
-  #add targets to get_minibatch function
-  # currently returning sars' instead of ((state, action), (reward + disco*Q(s',a*)))
 
 # function for calculating optimal q_value
 def calculate_optimal_q_value(state):
