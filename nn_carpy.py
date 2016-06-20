@@ -104,7 +104,45 @@ class NNAgent(object):
         
             self.memory.append(instance)
         
-        
+
+env = gym.make('CartPole-v0')
+wondering_gnome = NNAgent(env.action_space)        
             
+for i_episode in xrange(400):
+    observation = env.reset()
+    
+    episode_rewards = 0
+    episode_state_action_list = []
+    
+    for t in xrange(200):
+        env.render()
+        
+        current_state = observation  
         
         
+        
+        observation, reward, done, info = env.step(action)
+        
+ 
+        episode_rewards += reward
+        
+        episode_state_action_list.append((current_state,action))
+        
+        wondering_gnome.iteration += 1
+        
+        print "Iteration_number: "
+        print wondering_gnome.iteration 
+ 
+        if done:
+            
+            print "Episode finished after {} timesteps".format(t+1)
+            break
+    print "Episode Rewards: "
+    print episode_rewards
+    
+    
+    if wondering_gnome.should_we_add_to_memory(episode_rewards):
+    
+        wondering_gnome.add_episode_to_memory(episode_state_action_list)  
+      
+    
