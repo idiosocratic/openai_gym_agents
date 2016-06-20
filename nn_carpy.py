@@ -119,6 +119,14 @@ for i_episode in xrange(400):
         
         current_state = observation  
         
+        # choose action 
+        if wondering_gnome.should_we_exploit():
+        
+            action = wondering_gnome.get_action(current_state)
+            
+        if not wondering_gnome.should_we_exploit():
+        
+            action = env.action_space.sample()   
         
         
         observation, reward, done, info = env.step(action)
