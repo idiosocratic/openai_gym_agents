@@ -28,7 +28,7 @@ class NNAgent(object):
         self.iteration = 0 # how many actions have we taken
 
     
-    def is_episode_novel(self, episode_list, novelty_threshold):
+    def is_episode_novel(self, episode_states, novelty_threshold):
         
         avg_state_in_memory = [0]*len(self.memory[0][0][0]) 
         
@@ -56,13 +56,13 @@ class NNAgent(object):
             
         list_of_sum_of_sqr_distances_this_episode = []
         
-        for mem in episode_list: # calculate average distance of state in this episode from average state       
+        for mem in episode_states: # calculate average distance of state in this episode from average state       
             
             sum_o_sqrs = 0
             
             for iter in range(len(avg_state_in_memory)):    
              
-                param_dist = (avg_state_in_memory[iter] - episode_list[iter])**2
+                param_dist = (avg_state_in_memory[iter] - episode_states[iter])**2
                 sum_o_sqrs += param_dist    
                 
             list_of_sum_of_sqr_distances_this_episode.append(sum_o_sqrs)        
@@ -215,12 +215,15 @@ for i_episode in xrange(100):
     observation = env.reset()
     
     episode_rewards = 0
+    episode_state_list = []
     episode_state_action_list = []
     
     for t in xrange(200):
         env.render()
         
         current_state = observation  
+        
+        episode_state_list.append(current_state)
         
         # choose action 
         if wondering_gnome.should_we_exploit():
@@ -265,7 +268,12 @@ for i_episode in xrange(100):
     if wondering_gnome.should_we_add_to_memory(episode_rewards):
     
         wondering_gnome.add_episode_to_memory(episode_state_action_rewards_list)  
+    
+    if wondering_gnome.is_episode_novel(episode_state_list):    
+    
+        if wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
         
+            wondering_gnome.add_episode_to_novelty_memory(episode_state_action_rewards_list)
         
     wondering_gnome.decay_epsilon()    
            
