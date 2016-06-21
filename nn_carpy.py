@@ -93,6 +93,18 @@ class NNAgent(object):
                 sum_o_sqrs += param_dist
           
             mem_4_state.append((sum_o_sqrs, action)) # (distance,action) tuple
+            
+        for mem in self.novelty_memory:
+            
+            sum_o_sqrs = 0  # distance
+            action = mem[0][1]
+            
+            for iter in range(len(state)): # get distance 
+                
+                param_dist = (state[iter] - mem[0][0][iter])**2
+                sum_o_sqrs += param_dist
+          
+            mem_4_state.append((sum_o_sqrs, action)) # (distance,action) tuple    
           
         sort_mem_4_state = sorted(mem_4_state, key = lambda x: x[0])
         
