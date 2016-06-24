@@ -14,21 +14,22 @@ class NNAgent(object):
         assert isinstance(action_space, gym.spaces.discrete.Discrete), 'Yo, not our space!'
         
         # hyperparameters
-        self.epsilon = 0.02  # exploration percentage
-        self.epsilon_decay = 0.9 # exploration decay
+        self.epsilon = 0.5  # exploration percentage
+        self.epsilon_decay = 0.95 # exploration decay
         self.nn_num = 17 # number of nearest neighbors to vote 
-        self.max_mem = 3000 # number of state_action pairs to keep in memory
-        self.mem_b4_exploit = 700 # amount of experience before exploiting our knows
+        self.max_mem = 2000 # number of state_action pairs to keep in memory
+        self.mem_b4_exploit = 600 # amount of experience before exploiting our knows
         self.highest_episode_rewards = 0  # keep record of highest episodes, to decide what memories to keep
-        self.novelty_threshold = 1.5 # should be greater than or equal to 1( ='s 1 => no effect)
+        self.novelty_threshold = 1.1 # should be greater than or equal to 1( ='s 1 => no effect)
         
         # our memory
         self.memory = deque(maxlen=self.max_mem)  # self-pruning memory with max length of 2000
-        self.novelty_memory = deque(maxlen=np.floor(self.max_mem/3.0))
+        self.novelty_memory = deque(maxlen=self.max_mem)
         self.iteration = 0 # how many actions have we taken
 
     
     def is_episode_novel(self, episode_states, novelty_threshold):
+        
         
         avg_state_in_memory = [0]*len(self.memory[0][0][0]) 
         
@@ -37,6 +38,10 @@ class NNAgent(object):
             for iter in range(len(mem[0][0])):
             
                 avg_state_in_memory[iter] += mem[0][0][iter]
+                
+            for param in avg_state_in_memory: 
+            
+                param /= len(self.memory)    
         
         list_of_sum_of_sqr_distances = []
         
@@ -73,6 +78,9 @@ class NNAgent(object):
         
         if this_episodes_avg_dist_from_norm > (self.novelty_threshold * current_avg_dist_of_mem_states_from_norm):
         
+            print "N: " + str(self.novelty_threshold * current_avg_dist_of_mem_states_from_norm)
+            assert False 
+            
             return True      
         
         return False
@@ -165,11 +173,13 @@ class NNAgent(object):
     
     def should_we_add_to_novelty_memory(self, episode_rewards):   
     
-        if len(self.memory) == 0:
+        assert False
+     
+        if len(self.novelty_memory) == 0:
         
             return True
         
-        if len(self.memory) > 0:
+        if len(self.novelty_memory) > 0:
     
             if episode_rewards >= self.novelty_memory[0][1]:
         
@@ -180,9 +190,9 @@ class NNAgent(object):
         
     def decay_epsilon(self):
     
-        #if self.iteration > self.mem_b4_exploit : 
+        if self.iteration > self.mem_b4_exploit : 
         
-        self.epsilon *= self.epsilon_decay
+            self.epsilon *= self.epsilon_decay
         
     
     def add_episode_to_memory(self, episode):
@@ -211,7 +221,7 @@ wondering_gnome = NNAgent(env.action_space)
             
 episode_rewards_list = []            
             
-for i_episode in xrange(100):
+for i_episode in xrange(150):
     observation = env.reset()
     
     episode_rewards = 0
@@ -265,15 +275,27 @@ for i_episode in xrange(100):
     
         episode_state_action_rewards_list.append((episode_state_action_list[iter],episode_rewards)) 
     
+    append_bool = False
+    
     if wondering_gnome.should_we_add_to_memory(episode_rewards):
     
         wondering_gnome.add_episode_to_memory(episode_state_action_rewards_list)  
     
-    if wondering_gnome.is_episode_novel(episode_state_list):    
-    
-        if wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
+        append_bool = True 
+      
+    if not append_bool: # if we haven't already added to memory   
         
-            wondering_gnome.add_episode_to_novelty_memory(episode_state_action_rewards_list)
+        if wondering_gnome.is_episode_novel(episode_state_list, wondering_gnome.novelty_threshold):   
+            
+            print "1"
+            assert False
+    
+            if wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
+        
+                print "2"
+                assert False
+        
+                wondering_gnome.add_episode_to_novelty_memory(episode_state_action_rewards_list)
         
     wondering_gnome.decay_epsilon()    
            
@@ -284,5 +306,6 @@ print "Average Overall: "
 print np.average(episode_rewards_list)   
 print "Average of last 30 episodes: "
 print np.average(episode_rewards_list[-30:]) 
-
-
+print "Len of Nov Mem: "
+print len(wondering_gnome.novelty_memory)
+print len(wondering_gnome.memory)
