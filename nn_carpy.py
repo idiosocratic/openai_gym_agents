@@ -14,17 +14,17 @@ class NNAgent(object):
         assert isinstance(action_space, gym.spaces.discrete.Discrete), 'Yo, not our space!'
         
         # hyperparameters
-        self.epsilon = 0.5  # exploration percentage
+        self.epsilon = 0.3  # exploration percentage
         self.epsilon_decay = 0.95 # exploration decay
         self.nn_num = 17 # number of nearest neighbors to vote 
-        self.max_mem = 2000 # number of state_action pairs to keep in memory
+        self.max_mem = 4000 # number of state_action pairs to keep in memory
         self.mem_b4_exploit = 600 # amount of experience before exploiting our knows
-        self.highest_episode_rewards = 0  # keep record of highest episodes, to decide what memories to keep
-        self.novelty_threshold = 1.1 # should be greater than or equal to 1( ='s 1 => no effect)
+        self.highest_episode_rewards = 0  # keep record of highest episode, to decide what memories to keep
+        self.did_we_do_well_threshold = 0.5 # percentage of highest episode rewards needed for pat on back
+        self.novelty_threshold = 5 # should be greater than or equal to 1( ='s 1 => no effect)
         
         # our memory
         self.memory = deque(maxlen=self.max_mem)  # self-pruning memory with max length of 2000
-        self.novelty_memory = deque(maxlen=self.max_mem)
         self.iteration = 0 # how many actions have we taken
 
     
@@ -89,18 +89,6 @@ class NNAgent(object):
                 sum_o_sqrs += param_dist
           
             mem_4_state.append((sum_o_sqrs, action)) # (distance,action) tuple
-            
-        for mem in self.novelty_memory:
-            
-            sum_o_sqrs = 0  # distance
-            action = mem[0][1]
-            
-            for iter in range(len(state)): # get distance 
-                
-                param_dist = (state[iter] - mem[0][0][iter])**2
-                sum_o_sqrs += param_dist
-          
-            mem_4_state.append((sum_o_sqrs, action)) # (distance,action) tuple    
           
         sort_mem_4_state = sorted(mem_4_state, key = lambda x: x[0])
         
@@ -159,22 +147,6 @@ class NNAgent(object):
         return False  
     
     
-    def should_we_add_to_novelty_memory(self, episode_rewards):   
-    
-        assert False
-     
-        if len(self.novelty_memory) == 0:
-        
-            return True
-        
-        if len(self.novelty_memory) > 0:
-    
-            if episode_rewards >= self.novelty_memory[0][1]:
-        
-                return True
-          
-        return False  
-    
         
     def decay_epsilon(self):
     
@@ -193,15 +165,41 @@ class NNAgent(object):
         self.memory = deque(sorted(self.memory, key = lambda x: x[1]),maxlen=self.max_mem)
         
         
-    def add_episode_to_novelty_memory(self, episode):
+    def did_we_do_well(current_episode_rewards):
     
-        for instance in episode:
+        if current_episode_rewards < self.highest_episode_rewards*self.did_we_do_well_threshold:
+      
+            return False
         
-            self.novelty_memory.append(instance)
+        return True
         
-        # put memories with lowest reward near front, will be pruned first    
-        self.novelty_memory = deque(sorted(self.novelty_memory, key = lambda x: x[1]),maxlen=self.max_mem)    
+      
+    def correct_our_actions_list(episode_state_action_list):
+    
+        corrected_state_action_list = []
+    
+        for iter in range(len(episode_state_action_list)):
+         
+            corrected_action = 0.5 # not an integer
+         
+            if episode_state_action_list[iter][1] == 1:
             
+                corrected_action = 0
+                
+            if episode_state_action_list[iter][1] == 0:
+            
+                corrected_action = 1
+                
+            assert (corrected_action==1 or corrected_action==0)        
+        
+            corrected_state_action_list.append((episode_state_action_list[iter][0], corrected_action))  
+            
+        assert (len(corrected_state_action_list) == len(episode_state_action_list))
+        
+        return corrected_state_action_list                  
+    
+            
+        
         
 
 env = gym.make('CartPole-v0')
