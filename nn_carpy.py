@@ -33,55 +33,43 @@ class NNAgent(object):
         
         avg_state_in_memory = [0]*len(self.memory[0][0][0]) 
         
-        for mem in self.memory: # calculate average state in memory       
+        for mem in self.memory: # sum every state in memory       
+            
+            for iter in range(len(avg_state_in_memory)):
+            
+                avg_state_in_memory[iter] += mem[0][0][iter]    
+         
+        for iter in range(len(avg_state_in_memory)): # divide by memory length for avg
+            
+            avg_state_in_memory[iter] /= len(self.memory) 
+
+
+        avg_state_this_episode = [0]*len(self.memory[0][0][0]) 
         
-            for iter in range(len(mem[0][0])):
+        for state in episode_states: # sum every state in memory       
             
-                avg_state_in_memory[iter] += mem[0][0][iter]
-                
-            for param in avg_state_in_memory: 
+            for iter in range(len(avg_state_this_episode)): # sum states in episode list
             
-                param /= len(self.memory)    
+                avg_state_this_episode[iter] += state[iter]    
+         
+        for iter in range(len(avg_state_this_episode)): # divide by episode length for avg
+            
+            avg_state_this_episode[iter] /= len(episode_states) 
+
         
-        list_of_sum_of_sqr_distances = []
+        distance_tween_mem_avg_episode_avg = [0]*len(self.memory[0][0][0]) 
         
-        for mem in self.memory: # calculate average distance of state in memory from average state       
-            
-            sum_o_sqrs = 0
-            
-            for iter in range(len(mem[0][0])):    
-             
-                param_dist = (avg_state_in_memory[iter] - mem[0][0][iter])**2
-                sum_o_sqrs += param_dist    
-                
-            list_of_sum_of_sqr_distances.append(sum_o_sqrs)
-            
+        for iter in range(len(distance_tween_mem_avg_episode_avg)):
         
-        current_avg_dist_of_mem_states_from_norm = np.average(list_of_sum_of_sqr_distances)    
-            
-        list_of_sum_of_sqr_distances_this_episode = []
+            distance_tween_mem_avg_episode_avg[iter] = abs(avg_state_this_episode[iter] - avg_state_in_memory)
+      
+        # new novelty calc    
         
-        for mem in episode_states: # calculate average distance of state in this episode from average state       
+        if np.sum(distance_tween_mem_avg_episode_avg) > self.novelty_threshold:
             
-            sum_o_sqrs = 0
-            
-            for iter in range(len(avg_state_in_memory)):    
-             
-                param_dist = (avg_state_in_memory[iter] - episode_states[iter])**2
-                sum_o_sqrs += param_dist    
-                
-            list_of_sum_of_sqr_distances_this_episode.append(sum_o_sqrs)        
-                
-        this_episodes_avg_dist_from_norm = np.average(list_of_sum_of_sqr_distances_this_episode)
-        
-        # novelty calculation
-        
-        if this_episodes_avg_dist_from_norm > (self.novelty_threshold * current_avg_dist_of_mem_states_from_norm):
-        
-            print "N: " + str(self.novelty_threshold * current_avg_dist_of_mem_states_from_norm)
-            assert False 
-            
-            return True      
+            print "distance"
+            print np.sum(distance_tween_mem_avg_episode_avg)
+            return True
         
         return False
                  
@@ -221,7 +209,7 @@ wondering_gnome = NNAgent(env.action_space)
             
 episode_rewards_list = []            
             
-for i_episode in xrange(150):
+for i_episode in xrange(40):
     observation = env.reset()
     
     episode_rewards = 0
@@ -288,12 +276,12 @@ for i_episode in xrange(150):
         if wondering_gnome.is_episode_novel(episode_state_list, wondering_gnome.novelty_threshold):   
             
             print "1"
-            assert False
+            #assert False
     
-            if wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
+            if True: # wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
         
                 print "2"
-                assert False
+                #assert False
         
                 wondering_gnome.add_episode_to_novelty_memory(episode_state_action_rewards_list)
         
