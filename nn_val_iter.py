@@ -28,7 +28,7 @@ class NnValAgent(object):
 
     
     
-    def should_we_add_to_sas_memory(self, state, action): # only need first state and action, deterministic environment
+    def should_we_add_to_memory(self, state, action): # only need first state and action, deterministic environment
     
         for sas in self.sas_tuple_list:
         
@@ -70,6 +70,12 @@ class NnValAgent(object):
         
         
         
+    def add_2_sas_memory(self, old_state, action, new_state):
+    
+        self.sas_tuple_list.append((old_state, action, new_state))        
+        
+        
+        
     def get_episode_archetypes(self, episode_states): # get representative episode states
         
         archetype_list = []
@@ -100,7 +106,7 @@ class NnValAgent(object):
         
             for memory_state in self.state_value_memory:
             
-                if self.self.are_these_states_the_same(episode_state, memory_state):
+                if self.are_these_states_the_same(episode_state, memory_state):
                 
                     current_value = self.state_value_memory[memory_state] 
                     
@@ -185,7 +191,7 @@ class NnValAgent(object):
         
 
 env = gym.make('CartPole-v0')
-wondering_gnome = NNAgent(env.action_space)        
+wondering_gnome = NnValAgent(env.action_space)        
             
 episode_rewards_list = []            
             
@@ -194,35 +200,40 @@ for i_episode in xrange(100):
     
     episode_rewards = 0
     episode_state_list = []
-    episode_state_action_list = []
+    #episode_state_action_list = []
     
     for t in xrange(200):
         env.render()
         
         current_state = observation  
         
-        episode_state_list.append(current_state)
+        have_we_been_here = wondering_gnome.have_we_been_here(current_state)
         
-        # choose action 
-        if wondering_gnome.should_we_exploit():
+        action = env.action_space.sample() # initialize action randomly
         
-            action = wondering_gnome.get_action(current_state)
+        # should we override action 
+        if have_we_been_here:
             
-        if not wondering_gnome.should_we_exploit():
+            if wondering_gnome.should_we_exploit():
         
-            action = env.action_space.sample()   
+                action = wondering_gnome.get_best_action(current_state) # overwrite random action 
         
-        print "Action: "
-        print action
         
         observation, reward, done, info = env.step(action)
         
- 
+        new_state = observation
+        
         episode_rewards += reward
         
-        episode_state_action_list.append((current_state,action))
+        if wondering_gnome.should_we_add_to_memory(current_state, action):
+        
+            wondering_gnome.add_2_state_val_memory(self, current_state)   
+    
+            wondering_gnome.add_2_sas_memory(current_state, action, new_state)
         
         wondering_gnome.iteration += 1
+        
+        episode_state_list.append(current_state)
         
         print "Iteration_number: "
         print wondering_gnome.iteration 
@@ -235,35 +246,10 @@ for i_episode in xrange(100):
     print episode_rewards
     episode_rewards_list.append(episode_rewards)
     
-    wondering_gnome.update_highest_rewards(episode_rewards)
+    episode_archetypes = wondering_gnome.get_episode_archetypes(episode_state_list)
     
+    wondering_gnome.update_state_values(episode_archetypes, episode_rewards)
     
-    episode_state_action_rewards_list = []
-    
-    
-    for iter in range(len(episode_state_action_list)):
-    
-        episode_state_action_rewards_list.append((episode_state_action_list[iter],episode_rewards)) 
-    
-    append_bool = False
-    
-    if wondering_gnome.should_we_add_to_memory(episode_rewards):
-    
-        wondering_gnome.add_episode_to_memory(episode_state_action_rewards_list)  
-    
-        append_bool = True 
-      
-    if wondering_gnome.iteration < 501: #not append_bool: # if we haven't already added to memory   
-        
-        #if wondering_gnome.is_episode_novel(episode_state_list, wondering_gnome.novelty_threshold):   
-        
-        #if not wondering_gnome.did_we_do_well(episode_rewards): # wondering_gnome.should_we_add_to_novelty_memory(episode_rewards):
-                
-        episode_state_action_rewards_list = wondering_gnome.correct_our_actions_list(episode_state_action_rewards_list)
-                
-        #wondering_gnome.add_episode_to_corrected_memory(episode_state_action_rewards_list) 
-                
-        
     wondering_gnome.decay_epsilon()    
     
            
